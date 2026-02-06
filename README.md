@@ -141,3 +141,38 @@ colors.LIGHT_CORAL
 colors.LIGHT_TEAL
 colors.LIGHT_GREEN
 ```
+
+## Interactive Notebook Presentations (RISE)
+
+Jupyter notebooks in `ipynb/` are configured for [RISE](https://rise.readthedocs.io/) — a framework that turns notebooks into live slideshows with executable code.
+
+### Setup
+
+```bash
+pip install rise
+```
+
+### Usage
+
+1. Open a notebook in Jupyter:
+   ```bash
+   jupyter notebook ipynb/volatility_modeling.ipynb
+   ```
+
+2. Enter slideshow mode:
+   - Click the "Enter/Exit RISE Slideshow" button in the toolbar, or
+   - Press `Alt+R`
+
+3. Navigate:
+   - `Space` / `Shift+Space` — next / previous
+   - `Arrow keys` — navigate slides (right/left) and sub-slides (down/up)
+   - `Shift+Enter` — execute code cell
+
+### Slide structure
+
+Cells are tagged with slide types:
+- **slide** — new horizontal slide (section headers, explanations)
+- **subslide** — vertical sub-slide (code cells, outputs)
+- **skip** — hidden in presentation (setup code, alternatives)
+
+To edit slide types: View → Cell Toolbar → Slideshow
