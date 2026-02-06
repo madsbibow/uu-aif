@@ -1,0 +1,46 @@
+\documentclass[a4paper]{article}
+\usepackage[margin=0.3cm]{geometry}
+\usepackage{tikz}
+\usepackage{array}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\tabcolsep}{0pt}
+\renewcommand{\arraystretch}{0}
+
+% Card dimensions for 2x4 grid on A4
+\newcommand{\cardwidth}{10.2cm}
+\newcommand{\cardheight}{7.25cm}
+
+\newcommand{\card}[1]{%
+  \begin{tikzpicture}
+    \draw[thick] (0,0) rectangle (\cardwidth, \cardheight);
+    \node at (0.5*\cardwidth, 0.55*\cardheight) {%
+      \fontsize{72}{80}\selectfont\bfseries #1%
+    };
+    \node at (0.5*\cardwidth, 0.15*\cardheight) {%
+      \fontsize{22}{26}\selectfont\bfseries%
+      \ifodd#1 ODD\else EVEN\fi%
+    };
+  \end{tikzpicture}%
+}
+
+\newcommand{\cardpage}[8]{%
+\begin{tabular}{@{}c@{}c@{}}
+\card{#1} & \card{#2} \\
+\card{#3} & \card{#4} \\
+\card{#5} & \card{#6} \\
+\card{#7} & \card{#8}
+\end{tabular}%
+\newpage}
+
+\begin{document}
+\cardpage{1}{2}{3}{4}{5}{6}{7}{8}
+\cardpage{9}{10}{11}{12}{13}{14}{15}{16}
+\cardpage{17}{18}{19}{20}{21}{22}{23}{24}
+\cardpage{25}{26}{27}{28}{29}{30}{31}{32}
+\cardpage{33}{34}{35}{36}{37}{38}{39}{40}
+\begin{tabular}{@{}c@{}c@{}}
+\card{41} & \card{42} \\
+\card{43} & \card{44}
+\end{tabular}
+\end{document}

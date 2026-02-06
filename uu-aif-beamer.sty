@@ -1,0 +1,450 @@
+% uu-aif-beamer.sty
+% Utrecht University - Algorithms in Finance Beamer Template
+% Version 1.0 (January 2026)
+% License: CC BY 4.0
+%
+% A modern Beamer template featuring Utrecht University branding with
+% circuit board aesthetics for the Algorithms in Finance course.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{uu-aif-beamer}[2026/01/19 v1.0 UU Algorithms in Finance Beamer Template]
+
+% =============================================================================
+% REQUIRED PACKAGES
+% =============================================================================
+\RequirePackage{fontawesome5}
+\RequirePackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning, shadows, calc}
+% Disable PDF tagging (causes issues with BasicTeX)
+% Define tagging commands as no-ops before tcolorbox loads
+%\providecommand{\NewStructureName}[1]{}
+%\providecommand{\AssignStructureRole}[2]{}
+%\providecommand{\NewTaggingSocket}[2]{}
+%\providecommand{\NewTaggingSocketPlug}[2]{}
+%\providecommand{\AssignTaggingSocketPlug}[2]{}
+%\providecommand{\tagstructbegin}[1]{}
+%\providecommand{\tagstructend}{}
+%\providecommand{\UseStructureName}[1]{}
+%\providecommand{\tagpdfparaOff}{}
+%\providecommand{\tagpdfparaOn}{}
+%\ExplSyntaxOn
+%\providecommand{\socket_new:nn}[2]{}
+%\providecommand{\socket_assign_plug:nn}[2]{}
+%\providecommand{\plug_new:nnn}[3]{}
+%\cs_new:Npn \__tcolorbox_tag_start: {}
+%\cs_new:Npn \__tcolorbox_tag_stop: {}
+%\ExplSyntaxOff
+\RequirePackage{tcolorbox}
+\RequirePackage{amsmath, amssymb}
+\RequirePackage{graphicx}
+
+% =============================================================================
+% COLOR PALETTE - Utrecht University Brand Colors
+% =============================================================================
+
+% Primary UU colors
+\definecolor{uuyellow}{HTML}{FFCD00}    % Signature color
+\definecolor{uublack}{HTML}{000000}     % Primary text
+\definecolor{uuwhite}{HTML}{FFFFFF}     % Background/contrast
+\definecolor{uured}{HTML}{C00A35}       % Accent (use sparingly)
+
+% Secondary UU colors (for visualizations)
+\definecolor{uupurple}{HTML}{5B2182}
+\definecolor{uublue}{HTML}{5287C6}
+\definecolor{uugreen}{HTML}{24A793}
+\definecolor{uuorange}{HTML}{F3965E}
+\definecolor{uuburgundy}{HTML}{AA1555}
+\definecolor{uubrown}{HTML}{6E3B23}
+\definecolor{uudarkblue}{HTML}{001240}
+\definecolor{uucream}{HTML}{FFE6AB}
+
+% Background colors
+\definecolor{darkbg}{HTML}{1A1A2E}      % Dark slides background
+\definecolor{cream}{HTML}{FAF9F6}       % Content slides background
+
+% Soft pastels for content boxes
+\definecolor{softyellow}{HTML}{FFF5CC}
+\definecolor{softpurple}{HTML}{E8D4F0}
+\definecolor{softblue}{HTML}{D4E5F7}
+\definecolor{softcoral}{HTML}{F5D4D0}
+\definecolor{softgreen}{HTML}{D4F0E8}
+
+% Circuit board accent
+\definecolor{chipturq}{HTML}{5CCCC9}
+
+% =============================================================================
+% BEAMER THEME CONFIGURATION
+% =============================================================================
+
+% Use Moloch as base theme
+\usetheme{moloch}
+\setbeamertemplate{navigation symbols}{}
+
+% Set colors
+\setbeamercolor{background canvas}{bg=cream}
+\setbeamercolor{normal text}{fg=darkbg}
+\setbeamercolor{frametitle}{bg=darkbg, fg=uuyellow}
+\setbeamercolor{palette primary}{bg=uuyellow, fg=uublack}
+\setbeamercolor{itemize item}{fg=uuyellow}
+\setbeamercolor{itemize subitem}{fg=uupurple}
+\setbeamercolor{itemize subsubitem}{fg=uublue}
+
+% Override moloch frametitle
+\setbeamertemplate{frametitle}{
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth, ht=2.5ex, dp=1ex, leftskip=0.5cm]{frametitle}
+    \usebeamerfont{frametitle}\insertframetitle
+  \end{beamercolorbox}
+}
+
+% =============================================================================
+% NOLOGO FRAME OPTION
+% =============================================================================
+% Usage: \begin{frame}[nologo]{Title} for slides with dense content
+% This hides the logo but keeps the page number
+
+% Reset to default footline at start of every frame
+\RequirePackage{etoolbox}
+\BeforeBeginEnvironment{frame}{%
+  \setbeamertemplate{footline}[withlogo]%
+}
+
+\define@key{beamerframe}{nologo}[true]{%
+  \setbeamertemplate{footline}[nologo]%
+}
+
+% =============================================================================
+% CYCLING SECTION BACKGROUNDS
+% =============================================================================
+
+% Counter for cycling through backgrounds (4 backgrounds: 0, 1, 2, 3)
+\newcounter{sectionbgcounter}
+\setcounter{sectionbgcounter}{0}
+
+% Store current section background filename
+\newcommand{\currentsectionbg}{}
+
+% Override Moloch section page template with cycling backgrounds
+\setbeamertemplate{section page}{
+  % Determine which background to use
+  \ifcase\value{sectionbgcounter}%
+    \renewcommand{\currentsectionbg}{yellow_green.png}%
+  \or%
+    \renewcommand{\currentsectionbg}{purple_pink.png}%
+  \or%
+    \renewcommand{\currentsectionbg}{blue_turq.png}%
+  \or%
+    \renewcommand{\currentsectionbg}{green_turq.png}%
+  \fi%
+  % Advance counter for next section (cycle 0->1->2->3->0)
+  \stepcounter{sectionbgcounter}%
+  \ifnum\value{sectionbgcounter}>3%
+    \setcounter{sectionbgcounter}{0}%
+  \fi%
+  % Draw the section page
+  \begin{tikzpicture}[remember picture, overlay]
+    % Solid dark background - fill entire page
+    \fill[darkbg] (current page.south west) rectangle (current page.north east);
+    % Low-opacity circuit background
+    \node[anchor=center, opacity=0.2] at (current page.center) {
+      \includegraphics[width=\paperwidth, height=\paperheight]{\uubg{\currentsectionbg}}
+    };
+    % Section title - centered, yellow text, with text wrapping, no hyphenation
+    \node[anchor=center, inner sep=0pt] at (current page.center) {
+      \begin{minipage}{0.85\paperwidth}
+        \fontsize{28}{38}\selectfont
+        \color{uuyellow}
+        \lefthyphenmin=100
+        \righthyphenmin=100
+        \begin{center}
+          \insertsection
+        \end{center}
+      \end{minipage}
+    };
+  \end{tikzpicture}
+}
+
+% Make section frames plain (no header/footer)
+\AtBeginSection{
+  \begingroup
+  \setbeamertemplate{footline}{}
+  \setbeamercolor{background canvas}{bg=darkbg}
+  \frame[plain,c]{\sectionpage}
+  \endgroup
+}
+
+% =============================================================================
+% ASSET PATHS (relative to package directory)
+% =============================================================================
+% When compiling from within uu-aif-beamer/, use 'assets'
+% When compiling from parent directory, use 'uu-aif-beamer/assets'
+\newcommand{\uuaifassets}{assets}
+
+% Convenience commands for asset paths
+\newcommand{\uulogo}[1]{\uuaifassets/logos/#1}
+\newcommand{\uubg}[1]{\uuaifassets/backgrounds/#1}
+
+% =============================================================================
+% FOOTLINE TEMPLATES
+% =============================================================================
+
+% Default footline with logo
+\defbeamertemplate{footline}{withlogo}{
+  \leavevmode%
+  \hbox{%
+  \begin{beamercolorbox}[wd=\textwidth, ht=1cm, dp=0.5cm, leftskip=0.5cm, rightskip=0.5cm]{footline}%
+    \raisebox{-12pt}{\includegraphics[height=1cm]{\uulogo{UU_logo_2021_EN_BLACK.png}}}
+    \hfill
+    {\color{darkbg}\insertframenumber{} / \inserttotalframenumber}
+  \end{beamercolorbox}%
+  }%
+}
+
+% Footline without logo (for dense slides)
+\defbeamertemplate{footline}{nologo}{
+  \leavevmode%
+  \hbox{%
+  \begin{beamercolorbox}[wd=\textwidth, ht=1cm, dp=0.5cm, leftskip=0.5cm, rightskip=0.5cm]{footline}%
+    \hfill
+    {\color{darkbg}\insertframenumber{} / \inserttotalframenumber}
+  \end{beamercolorbox}%
+  }%
+}
+
+% Set default footline
+\setbeamertemplate{footline}[withlogo]
+
+% =============================================================================
+% CUSTOM COMMANDS
+% =============================================================================
+
+% Circular icon badge
+% Usage: \circicon{color}{fontawesome-icon}
+% Example: \circicon{uugreen}{\faChartLine}
+\newcommand{\circicon}[2]{%
+  \begin{tikzpicture}
+    \node[circle, draw=#1, line width=1.5pt, minimum size=2cm,
+          fill=#1!10, drop shadow={opacity=0.15}] (icon) {};
+    \node[font=\Large, color=#1, anchor=center,
+          text width=1.5em, align=center] at (icon.center) {#2};
+  \end{tikzpicture}
+}
+
+% Section divider slide
+% Usage: \sectiondivider{background-image}{title text}
+% Example: \sectiondivider{yellow_green.png}{What is option pricing?}
+\newcommand{\sectiondivider}[2]{%
+  \begingroup
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{frame numbering}[none]
+  \edef\uuaifbgpath{\uubg{#1}}%
+  \def\uuaifsectiontitle{#2}%
+  \usebackgroundtemplate{%
+    \begin{tikzpicture}[remember picture, overlay]
+      \fill[darkbg] (current page.south west) rectangle (current page.north east);
+      \node[opacity=0.2, at=(current page.center)] {
+        \expandafter\includegraphics\expandafter[width=\paperwidth, height=\paperheight]{\uuaifbgpath}
+      };
+    \end{tikzpicture}
+  }%
+  \begin{frame}[plain,c]
+    \centering
+    {\color{uuyellow}\fontsize{28}{34}\selectfont \uuaifsectiontitle}
+  \end{frame}
+  \endgroup
+}
+
+% Stat emphasis slide (AI Now "$1T" style)
+% Usage: \statemphasis{top text}{stat}{bottom text}{box color}
+% Example: \statemphasis{The market prices over}{\$1T}{in options daily.}{softcoral}
+\newcommand{\statemphasis}[4]{%
+  {
+  \setbeamercolor{background canvas}{bg=cream}
+  \setbeamertemplate{footline}{}
+  \begin{frame}[plain, c]
+    \begin{center}
+    {\color{darkbg}\large #1}
+    \end{center}
+    \vspace{0.15cm}
+    \begin{center}
+    \begin{tcolorbox}[
+      colback=#4,
+      colframe=#4,
+      arc=8mm,
+      boxrule=0pt,
+      width=0.85\textwidth,
+      halign=center,
+      top=1.2cm,
+      bottom=1.2cm
+    ]
+      {\fontsize{90}{100}\selectfont\textbf{#2}}
+    \end{tcolorbox}
+    \end{center}
+    \vspace{0.15cm}
+    \begin{center}
+    {\color{darkbg}\large #3}
+    \end{center}
+  \end{frame}
+  }
+}
+
+% Convenience preset: same \statemphasis layout, but with softgreen background.
+% Usage: \statemphasisgreen{top text}{stat}{bottom text}
+\newcommand{\statemphasisgreen}[3]{\statemphasis{#1}{#2}{#3}{softgreen}}
+
+% Medium stat emphasis (for formulas/smaller stats)
+% Usage: \statemphasismed{top text}{content}{bottom text}{box color}
+\newcommand{\statemphasismed}[4]{%
+  {
+  \setbeamercolor{background canvas}{bg=cream}
+  \setbeamertemplate{footline}{}
+  \begin{frame}[plain, c]
+    \begin{center}
+    {\color{darkbg}\large #1}
+    \end{center}
+    \vspace{0.3cm}
+    \begin{center}
+    \begin{tcolorbox}[
+      colback=#4,
+      colframe=#4,
+      arc=8mm,
+      boxrule=0pt,
+      width=0.75\textwidth,
+      halign=center,
+      top=0.8cm,
+      bottom=0.8cm
+    ]
+      {\fontsize{60}{70}\selectfont #2}
+    \end{tcolorbox}
+    \end{center}
+    \vspace{0.3cm}
+    \begin{center}
+    {\color{darkbg}\large #3}
+    \end{center}
+  \end{frame}
+  }
+}
+
+% Convenience preset: same \statemphasismed layout, but with softgreen background.
+% Usage: \statemphasismedgreen{top text}{content}{bottom text}
+\newcommand{\statemphasismedgreen}[3]{\statemphasismed{#1}{#2}{#3}{softgreen}}
+
+% Closing slide
+% Usage: \closingslide{text}{background-image}
+% Example: \closingslide{Questions?}{endpage_light_green.png}
+\newcommand{\closingslide}[2]{%
+  \begingroup
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{frame numbering}[none]
+  \def\uuaifclosingtext{#1}%
+  \edef\uuaifbgpath{\uubg{#2}}%
+  \usebackgroundtemplate{%
+    \begin{tikzpicture}[remember picture, overlay]
+      \fill[darkbg] (current page.south west) rectangle (current page.north east);
+      \node[opacity=0.25, at=(current page.center)] {
+        \expandafter\includegraphics\expandafter[width=\paperwidth, height=\paperheight]{\uuaifbgpath}
+      };
+    \end{tikzpicture}
+  }%
+  \begin{frame}[plain]
+    \begin{tikzpicture}[remember picture, overlay]
+      % Centered text
+      \node[anchor=center, align=center] at (current page.center) {
+        \color{uuwhite}
+        {\fontsize{28}{34}\selectfont \uuaifclosingtext}
+      };
+      % Logo bottom left
+      \node[anchor=south west] at ([xshift=0.8cm, yshift=0.8cm]current page.south west) {
+        \includegraphics[height=2cm]{\uulogo{UU_logo_2021_EN_WHITE.png}}
+      };
+    \end{tikzpicture}
+  \end{frame}
+  \endgroup
+}
+
+% =============================================================================
+% TCOLORBOX ENVIRONMENTS
+% =============================================================================
+
+% Formula highlight box
+% Usage: \begin{formulabox} ... \end{formulabox}
+\newtcolorbox{formulabox}{
+  colback=softyellow,
+  colframe=uuyellow,
+  arc=4mm,
+  boxrule=1.5pt,
+  left=12pt,
+  right=12pt,
+  top=10pt,
+  bottom=10pt
+}
+
+% Code block (dark background)
+% Usage: \begin{codebox} ... \end{codebox}
+\newtcolorbox{codebox}{
+  colback=darkbg,
+  colframe=uuyellow,
+  arc=3mm,
+  boxrule=1.5pt,
+  left=10pt,
+  right=10pt,
+  top=8pt,
+  bottom=8pt
+}
+
+% Info box with customizable colors
+% Usage: \begin{infobox}{border-color}{bg-color} ... \end{infobox}
+\newtcolorbox{infobox}[2]{
+  colback=#2,
+  colframe=#1,
+  arc=3mm,
+  boxrule=1pt,
+  left=8pt,
+  right=8pt
+}
+
+% =============================================================================
+% TITLE SLIDE COMMAND
+% =============================================================================
+
+% Title slide with circuit background
+% Usage: \titleslide{Course Title}{Lecture Subtitle}{Date}
+% Example: \titleslide{Algorithms in Finance}{Lecture 3: Option Pricing}{February 2026}
+\newcommand{\titleslide}[3]{%
+  \begingroup
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{frame numbering}[none]
+  \def\uuaiftitle{#1}%
+  \def\uuaifsubtitle{#2}%
+  \def\uuaifdate{#3}%
+  \usebackgroundtemplate{%
+    \begin{tikzpicture}[remember picture, overlay]
+      \fill[darkbg] (current page.south west) rectangle (current page.north east);
+      \node[opacity=0.05, at=(current page.center)] {
+        \includegraphics[width=\paperwidth, height=\paperheight]{\uubg{front_page_chip.png}}
+      };
+    \end{tikzpicture}
+  }%
+  \begin{frame}[plain]
+    \begin{tikzpicture}[remember picture, overlay]
+      \node[anchor=west, align=left] at ([xshift=-5.5cm, yshift=1.5cm]current page.center) {
+        \color{uuyellow}
+        {\fontsize{28}{34}\selectfont \uuaiftitle}
+      };
+      \node[anchor=west, align=left] at ([xshift=-5.5cm, yshift=0.3cm]current page.center) {
+        \color{uuyellow}
+        {\fontsize{18}{22}\selectfont \uuaifsubtitle}
+      };
+      \node[anchor=south west] at ([xshift=0.8cm, yshift=0cm]current page.south west) {
+        \includegraphics[height=2cm]{\uulogo{UU_logo_2021_EN_WHITE.png}}
+      };
+      \node[anchor=south east] at ([xshift=-0.8cm, yshift=0.8cm]current page.south east) {
+        \color{uuyellow}
+        {\small \uuaifdate}
+      };
+    \end{tikzpicture}
+  \end{frame}
+  \endgroup
+}
+
+\endinput

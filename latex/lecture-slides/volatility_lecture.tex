@@ -1,0 +1,1346 @@
+\documentclass[aspectratio=169]{beamer}
+
+% Custom UU AIF Beamer style
+\usepackage{uu-aif-beamer}
+
+% Packages
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+% \hypersetup{
+%     colorlinks=true,
+%     linkcolor=black,
+%     urlcolor=blue,
+%     citecolor=blue
+% }
+
+\begin{document}
+
+% Custom title slide
+{
+\setbeamercolor{background canvas}{bg=darkbg}
+\setbeamertemplate{footline}{}
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture, overlay]
+    \fill[darkbg] (current page.south west) rectangle (current page.north east);
+    \node[anchor=center, opacity=0.05] at (current page.center) {
+      \includegraphics[width=\paperwidth, height=\paperheight]{\uubg{front_page_chip.png}}
+    };
+
+    % Custom multi-line title
+    \node[anchor=west, align=left] at ([xshift=-5.5cm, yshift=1.5cm]current page.center) {
+      \color{uuyellow}
+      {\fontsize{32}{38}\selectfont Algorithms in Finance}
+    };
+    \node[anchor=west, align=left] at ([xshift=-5.5cm, yshift=0.5cm]current page.center) {
+      \color{uuyellow}
+      {\fontsize{20}{24}\selectfont Volatility Modelling and Forecasting}
+    };
+
+    % Logo
+    \node[anchor=south west] at ([xshift=0.8cm, yshift=0cm]current page.south west) {
+      \includegraphics[height=2cm]{\uulogo{UU_logo_2021_EN_WHITE.png}}
+    };
+
+    % Date
+    \node[anchor=south east] at ([xshift=-0.8cm, yshift=0.8cm]current page.south east) {
+      \color{uuyellow}
+      % {\small \today}
+      {\small February 2026}
+    };
+  \end{tikzpicture}
+\end{frame}
+}
+
+% Outline
+\begin{frame}[nologo]{Outline}
+
+\vspace{0.2cm}
+\textbf{\textcolor{blue}{Today's Lecture:}}
+\begin{itemize}
+    \item Recap: Volatility Foundations
+    \item Stylized Facts of Volatility
+\end{itemize}
+
+\vspace{0.4cm}
+\textbf{\textcolor{orange}{Workshop Session:}}
+\begin{itemize}
+    \item Forecasting Volatility
+    \item Forward-Looking Volatility as a Trading Signal
+    \item Conclusion
+\end{itemize}
+
+\end{frame}
+
+% =====================================================
+% SECTION 1: RECAP - FOUNDATIONS
+% =====================================================
+\section{Recap: Volatility Foundations}
+
+\begin{frame}[nologo]{What We Already Know}
+Building on Hull's \textit{Risk Management and Financial Institutions}:
+\begin{itemize}
+    \item Exponentially Weighted Moving Average (EWMA)
+    \item GARCH(1,1) models
+    \item Maximum Likelihood Estimation
+    \item Applications: Value-at-Risk (VaR)
+\end{itemize}
+\vspace{0.3cm}
+\textbf{Goal:} Quick review before advancing to more complex models, forecasting, and trading applications
+\end{frame}
+
+\begin{frame}[nologo]{Returns and Their Distribution}
+\textbf{Price to Return Transformation:}
+\begin{align*}
+r_t &= \log P_t - \log P_{t-1}
+\end{align*}
+
+\textbf{Return Decomposition:}
+\begin{align*}
+r_t &= \sigma_t z_t
+\end{align*}
+
+\textbf{Conditional Variance:}
+\begin{align*}
+\sigma_t^2 &= \mathbb{V}\left[r_t|\Omega_{t-1}\right]
+\end{align*}
+
+where:
+\begin{itemize}
+    \item $z_t \sim \mathcal{N}(0,1)$ i.i.d for all $t=1,\ldots,n$
+    \item $\Omega_{t-1}$ denotes the information set (history of the time series)
+    \item $\sigma_t^2$ is the conditional variance (time-varying volatility)
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Key Insight:} Returns are unpredictable, but \textit{volatility} is predictable!
+\end{frame}
+
+\begin{frame}[nologo]{EWMA: Exponentially Weighted Moving Average}
+\textbf{Basic Idea:} Recent observations matter more than distant ones
+
+\begin{block}{EWMA Formula}
+$$\sigma_t^2 = \lambda \sigma_{t-1}^2 + (1-\lambda) r_{t-1}^2$$
+\end{block}
+
+where:
+\begin{itemize}
+    \item $\sigma_t^2$ is the variance forecast for time $t$
+    \item $r_{t-1}$ is the return at time $t-1$
+    \item $\lambda$ is a decay factor (typically 0.94 for daily data, RiskMetrics)
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Key Properties:}
+\begin{itemize}
+    \item Simple to implement
+    \item No parameters to estimate (if $\lambda$ is fixed)
+    \item Reacts quickly to volatility changes
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{GARCH(1,1): Generalized Autoregressive Conditional Heteroskedasticity}
+\textbf{Motivation:} Allow data to determine optimal weights
+
+\textbf{GARCH(1,1)} --- \href{https://www.sciencedirect.com/science/article/pii/0304407686900631}{Bollerslev (1986)}:
+$$\sigma_t^2 = \omega + \alpha r_{t-1}^2 + \beta \sigma_{t-1}^2$$
+
+where:
+\begin{itemize}
+    \item $\omega$ is the long-run variance component (constant)
+    \item $\alpha$ is the reaction to new information (ARCH term)
+    \item $\beta$ is the persistence of volatility (GARCH term)
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Constraints:}
+\begin{itemize}
+    \item $\omega > 0$, $\alpha \geq 0$, $\beta \geq 0$ for non-negativity
+    \item $\alpha + \beta < 1$ for stationarity
+    \item Long-run variance: $\sigma_L^2 = \frac{\omega}{1-\alpha-\beta}$
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{Maximum Likelihood Estimation (MLE)}
+\textbf{Question:} How do we estimate $\omega$, $\alpha$, $\beta$?
+
+\textbf{Answer:} Maximum Likelihood Estimation
+
+\begin{block}{Log-Likelihood Function}
+$$\mathcal{L} = -\frac{1}{2}\sum_{t=1}^{T} \left[\ln(2\pi) + \ln(\sigma_t^2) + \frac{r_t^2}{\sigma_t^2}\right]$$
+\end{block}
+
+\textbf{Procedure:}
+\begin{enumerate}
+    \item Start with initial parameter values
+    \item Compute $\sigma_t^2$ for all $t$ using GARCH formula
+    \item Evaluate log-likelihood
+    \item Use optimization algorithm to maximize $\mathcal{L}$
+    \item Standard errors from inverse Hessian (if model is correctly specified, see \href{https://doi.org/10.1080/07474939208800229}{Bollerslev \& Wooldridge (1992)})
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[nologo]{Application: Value-at-Risk (VaR)}
+\textbf{Definition:} VaR at confidence level $\alpha$ is the loss level that will not be exceeded with probability $\alpha$
+\begin{columns}[T]
+\column{0.52\textwidth}
+
+
+\begin{block}{VaR Calculation with GARCH}
+$$\text{VaR}_\alpha = -\mu_t + z_\alpha \cdot \sigma_t$$
+\end{block}
+
+where:
+\begin{itemize}
+    \item $\mu_t$ is expected return (often assumed 0)
+    \item $z_\alpha$ is a quantile of the distribution\newline (e.g., -1.645 for 95\% VaR for Standard-Normal Distribution)
+    \item $\sigma_t$ is the volatility forecast
+\end{itemize}
+
+
+
+\column{0.46\textwidth}
+\vspace{0.4cm}
+\begin{center}
+\includegraphics[width=\textwidth]{assets/other/var_distribution.pdf}
+\end{center}
+\end{columns}
+
+\vspace{0.2cm}
+\textbf{Example:} 95\% daily VaR, \$10M portfolio, $\sigma_t = 2\%$:
+$$\text{VaR}_{95\%} = 1.645 \times 0.02 \times \$10M = \$329,000$$
+\end{frame}
+
+
+% =====================================================
+% SECTION 2: STYLIZED FACTS
+% =====================================================
+\section{Stylized Facts of Volatility}
+
+\begin{frame}[nologo]{Empirical Observations: Stylized Facts}
+Financial returns and its volatility exhibits characteristic patterns (\href{https://www.tandfonline.com/doi/abs/10.1080/713665670}{Cont, 2001}):
+
+\begin{enumerate}
+    \item \textbf{Volatility Clustering}: High volatility periods cluster together
+    \item \textbf{Mean Reversion}: Volatility tends to revert to long-run average
+    \item \textbf{Non-Normality of Returns / Fat Tails}: Return distributions have heavier tails than normal
+    \item \textbf{Leverage Effect}: Negative returns $\rightarrow$ higher volatility
+\end{enumerate}
+
+\vspace{0.3cm}
+\textbf{Additional stylized facts} (covered in appendix):
+\begin{itemize}
+    \item \textbf{Long Memory}: Volatility autocorrelation decays slowly (hyperbolic)
+    \item \textbf{Structural Breaks}: Parameters shift across economic regimes
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Implication:} We need models that capture these features!
+\end{frame}
+
+\begin{frame}[nologo]{Stylized Fact 1: Volatility Clustering}
+\begin{center}
+\textit{"Large changes tend to be followed by large changes, of either sign,\\
+and small changes tend to be followed by small changes."}\\
+\vspace{0.2cm}
+--- \href{https://link.springer.com/chapter/10.1007/978-1-4757-2763-0_14}{Mandelbrot (1963)}
+\end{center}
+
+\vspace{-0.2cm}
+\textbf{Evidence:}
+\begin{itemize}
+    \item Visual inspection of return series shows clustering
+    \item Significant autocorrelation in $|r_t|$ and $r_t^2$
+    \item Little autocorrelation in $r_t$ itself
+\end{itemize}
+
+\textbf{Models That Capture This:}
+\begin{itemize}
+    \item ARCH/GARCH family
+    \item HAR family
+    \item Stochastic volatility models
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{Stylized Fact 1: Volatility Clustering}
+\vspace{0.6cm}
+\begin{center}
+\includegraphics[width=0.95\textwidth]{assets/other/volatility_clustering.pdf}
+\end{center}
+
+\end{frame}
+
+\begin{frame}[nologo]{Stylized Fact 2: Mean Reversion}
+\textbf{Observation:} Volatility doesn't stay high (or low) forever
+
+\textbf{Mathematical Expression:}
+$$E[\sigma_t^2 | \mathcal{F}_{t-1}] \rightarrow \sigma_L^2 \text{ as } t \rightarrow \infty$$
+
+\textbf{In GARCH(1,1):}
+\begin{itemize}
+    \item Speed of mean reversion controlled by $\alpha + \beta$
+    \item If $\alpha + \beta \approx 1$: very slow mean reversion (high persistence)
+    \item If $\alpha + \beta \ll 1$: rapid mean reversion
+\end{itemize}
+
+\textbf{Practical Importance:}
+\begin{itemize}
+    \item Long-horizon forecasts converge to long-run variance
+    \item Crisis volatility eventually subsides
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{Stylized Fact 3: Non-Normality of Returns / Fat Tails}
+\textbf{Observation:} Returns have heavier tails than Normal distribution
+
+
+\begin{center}
+\includegraphics[width=0.85\textwidth]{assets/other/fat_tails.pdf}
+\end{center}
+
+\end{frame}
+
+\begin{frame}[nologo]{Stylized Fact 3: Non-Normality of Returns / Fat Tails}
+\textbf{Observation:} Returns have heavier tails than Normal distribution
+
+\textbf{Standard GARCH:}
+$$z_t = \frac{\varepsilon_t}{\sigma_t} \sim N(0,1)$$
+
+\textbf{Problem:} Empirical returns show excess kurtosis
+
+\vspace{0.2cm}
+\textbf{Solutions:}
+
+\begin{itemize}
+    \item \textbf{Student-t:} $z_t \sim t_\nu$
+    \begin{itemize}
+        \item Typical: $\nu \approx 5-10$
+        \item As $\nu \rightarrow \infty$: $\rightarrow$ Normal
+    \end{itemize}
+
+    \item \textbf{GED:} $z_t \sim \text{GED}(\nu)$
+    \begin{itemize}
+        \item $\nu = 2$: Normal
+        \item $\nu < 2$: Fat tails
+    \end{itemize}
+\end{itemize}
+
+
+\vspace{0.2cm}
+\textbf{Implementation:} Modify log-likelihood function during MLE estimation
+\end{frame}
+
+\begin{frame}[nologo]{Stylized Fact 4: Leverage Effect}
+\textbf{Asymmetric Response:} Negative returns increase volatility more than positive returns
+
+\textbf{Two Main Explanations:}
+\begin{enumerate}
+    \item \textbf{Financial Leverage} (\href{https://doi.org/10.1016/0304-405X(82)90018-6}{Christie, 1982}):
+    \begin{itemize}
+        \item Fixed debt + falling stock price $\rightarrow$ higher debt/equity ratio
+        \item Higher leverage $\rightarrow$ higher risk $\rightarrow$ higher volatility
+    \end{itemize}
+
+    \item \textbf{Volatility Feedback} (\href{https://doi.org/10.1016/0304-405X(92)90037-X}{Campbell \& Hentschel, 1992}):
+    \begin{itemize}
+        \item Any news increases future volatility
+        \item Higher volatility $\rightarrow$ higher discount rate $\rightarrow$ lower prices
+        \item Bad news: double effect (fundamentals + volatility feedback)
+        \item Result: ``No news is good news''
+    \end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[nologo]{Asymmetric Models: GJR-GARCH}
+\textbf{GJR-GARCH(1,1)} ---  \href{https://doi.org/10.1111/j.1540-6261.1993.tb05128.x}{Glosten, Jagannathan, Runkle (1993)}:
+$$\sigma_t^2 = \omega + \alpha\varepsilon_{t-1}^2 + \gamma\varepsilon_{t-1}^2\mathbb{I}_{\varepsilon_{t-1}<0} + \beta \sigma_{t-1}^2$$
+
+where $\mathbb{I}_{\varepsilon_{t-1}<0} = 1$ if $\varepsilon_{t-1} < 0$, zero otherwise
+
+\vspace{0.4cm}
+\textbf{Impact of Shocks:}
+\begin{itemize}
+    \item \textbf{Positive shock} ($\varepsilon_{t-1} > 0$): impact = $\alpha$
+    \item \textbf{Negative shock} ($\varepsilon_{t-1} < 0$): impact = $\alpha + \gamma$
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Interpretation:} If $\gamma > 0$, negative shocks increase volatility more
+
+\textbf{Stationarity:} $\alpha + \beta + \gamma/2 < 1$ (for symmetric $z_t$)
+\end{frame}
+
+\begin{frame}[nologo]{Other Asymmetric Models: EGARCH \& APARCH}
+\textbf{EGARCH(1,1)} --- \href{https://doi.org/10.2307/2938260}{Nelson (1991)}:
+$$\log(\sigma_t^2) = \omega + \gamma_1 z_{t-1} + \alpha_1(|z_{t-1}| - E[|z_{t-1}|]) + \beta_1\log(\sigma_{t-1}^2)$$
+\begin{itemize}
+    \item Models $\log(\sigma_t^2)$ $\rightarrow$ no non-negativity constraints
+    \item $\gamma_1 < 0$ implies leverage effect
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{APARCH(1,1)} --- \href{https://www.sciencedirect.com/science/article/pii/092753989390006D}{Ding, Granger, Engle (1993)}:
+$$(\sigma_t^2)^{\delta/2} = \omega + \alpha(|\varepsilon_{t-1}| - \gamma\varepsilon_{t-1})^\delta + \beta (\sigma_{t-1}^2)^{\delta/2}$$
+\begin{itemize}
+    \item $\delta > 0$: power parameter (data-driven)
+    \item $\gamma \in (-1,1)$: asymmetry parameter
+    \item Special case: $\delta = 2$, $\gamma = 0$ gives standard GARCH
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Note:} While flexible, GJR-GARCH often preferred for simplicity and interpretability
+\end{frame}
+
+\begin{frame}[nologo]{News Impact Curves}
+\textbf{Definition:} How does today's shock $\varepsilon_{t-1}$ affect tomorrow's volatility $\sigma_t^2$?
+
+\begin{center}
+\includegraphics[width=0.85\textwidth]{assets/other/news_impact_curve.pdf}
+\end{center}
+
+\end{frame}
+
+\begin{frame}[nologo]{HAR Model: Heterogeneous AutoRegressive}
+\textbf{HAR Model} --- \href{https://academic.oup.com/jfec/article-abstract/7/2/174/856522}{Corsi (2009)}:
+$$\text{RV}_{t,t+h} = \beta_0 + \beta_D \text{RV}_{t-1,t} + \beta_W \text{RV}_{t-5,t} + \beta_M \text{RV}_{t-22,t} + \varepsilon_t$$
+
+\textbf{Key Features:}
+\begin{itemize}
+    \item Uses \textbf{realized volatility (RV)} from high-frequency data
+    \item Aggregates volatility over multiple horizons:
+    \begin{itemize}
+        \item Daily: $\text{RV}_{t-1,t}$
+        \item Weekly: $\text{RV}_{t-5,t} = \frac{1}{5}\sum_{i=1}^{5}\text{RV}_{t-i,t-i+1}$
+        \item Monthly: $\text{RV}_{t-22,t} = \frac{1}{22}\sum_{i=1}^{22}\text{RV}_{t-i,t-i+1}$
+    \end{itemize}
+    \item Captures heterogeneous market participants (short/long horizons)
+\end{itemize}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Simple linear regression (fast estimation)
+    \item Captures long memory without fractional differencing
+    \item Often outperforms GARCH for realized volatility forecasting
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{HAR-X: Adding External Information}
+\begin{block}{HAR-X Model}
+$$\text{RV}_{t+1} = \beta_0 + \beta_D \text{RV}_t + \beta_W \text{RV}_{t-5,t} + \beta_M \text{RV}_{t-22,t} + \gamma X_t + \varepsilon_{t+1}$$
+\end{block}
+
+\textbf{Common Extensions:}
+\begin{itemize}
+    \item \textbf{HAR-RV-CJ:} Separate continuous ($C_t$) and jump ($J_t$) components
+    \item \textbf{HAR-RSV:} Realized semivariance (leverage effect)
+    \item \textbf{HAR-VIX:} Include implied volatility as predictor
+\end{itemize}
+
+\vspace{0.2cm}
+\begin{block}{Good to know:}
+\begin{itemize}
+    \item Cannot use future information (look-ahead bias)
+    \item Linear structure allows ``easy'' extension with Machine Learning (\href{https://academic.oup.com/jfec/article-abstract/21/5/1680/6612759}{Christensen, Siggaard, \& Veliyev, 2023})
+\end{itemize}
+\end{block}
+\end{frame}
+
+
+\begin{frame}[nologo]{Why So Many Models?}
+\textbf{Each model addresses specific stylized facts:}
+
+\begin{itemize}
+    \item \textbf{Asymmetry}: GJR-GARCH, EGARCH, APARCH, TGARCH
+    \item \textbf{Long Memory}: FIGARCH, HYGARCH, FIEGARCH
+    \item \textbf{Structural Breaks}: Component GARCH, MRS-GARCH
+    \item \textbf{Multivariate}: DCC, BEKK, OGARCH
+    \item \textbf{Realized Volatility}: HAR, MIDAS-GARCH-RV
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Trade-offs:}
+\begin{itemize}
+    \item \textcolor{blue}{More complexity} $\rightarrow$ better fit to stylized facts
+    \item \textcolor{red}{More parameters} $\rightarrow$ overfitting risk, harder estimation
+    \item \textcolor{orange}{Simplicity} often wins in out-of-sample forecasting
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Practical Advice:} Start with GARCH(1,1), add complexity only if needed!
+\end{frame}
+
+% =====================================================
+% SECTION 3: FORECASTING VOLATILITY
+% =====================================================
+\section{Forecasting Volatility}
+
+\begin{frame}[nologo]{Why Forecast Volatility?}
+\textbf{Key Applications:}
+\begin{itemize}
+    \item \textbf{Risk Management}: VaR, ES, portfolio risk
+    \item \textbf{Regulatory Compliance}: Basel III, Solvency II
+    \item \textbf{Option Pricing}: Volatility is a key input
+    \item \textbf{Asset Allocation}: Risk-adjusted position sizing
+    \item \textbf{Trading Strategies}: Volatility targeting, mean reversion
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Forecast Horizons:}
+\begin{itemize}
+    \item \textbf{Next day}: Intraday trading, daily risk reports
+    \item \textbf{Next week}: Weekly rebalancing, tactical trading
+    \item \textbf{Longer term}: Strategic allocation, option pricing
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{One-Step Ahead Forecast (Next Day)}
+\textbf{GARCH(1,1) one-step ahead:}
+
+\begin{block}{Next Day Volatility}
+$$\hat{\sigma}_{t+1}^2 = \omega + \alpha r_t^2 + \beta \sigma_t^2$$
+\end{block}
+
+\textbf{Procedure:}
+\begin{enumerate}
+    \item Estimate GARCH parameters using historical data
+    \item Compute current volatility $\sigma_t^2$
+    \item Observe current return $r_t$
+    \item Plug into formula to get $\hat{\sigma}_{t+1}^2$
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}[nologo]{Multi-Step Ahead Forecasts}
+\textbf{Challenge:} How to forecast $\hat{\sigma}_{t+h}^2$ for $h > 1$?
+
+\textbf{Key Insight:} Future returns are unpredictable (EMH), so $E[r_{t+j}^2] = \sigma_{t+j}^2$
+
+\begin{block}{GARCH(1,1) Multi-Step Forecast}
+$$\hat{\sigma}_{t+h}^2 = \sigma_L^2 + (\alpha + \beta)^{h-1}(\hat{\sigma}_{t+1}^2 - \sigma_L^2)$$
+\end{block}
+
+where $\sigma_L^2 = \frac{\omega}{1-\alpha-\beta}$ is the long-run variance
+
+\textbf{Observations:}
+\begin{itemize}
+    \item Exponential decay toward long-run variance
+    \item Rate of decay: $\alpha + \beta$ (persistence parameter)
+    \item As $h \rightarrow \infty$: $\hat{\sigma}_{t+h}^2 \rightarrow \sigma_L^2$
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{Example: Weekly Forecast}
+\textbf{Question:} Forecast volatility for next week (5 trading days)
+
+\textbf{Approach 1: Direct Multi-Step}
+$$\hat{\sigma}_{t+5}^2 = \sigma_L^2 + (\alpha + \beta)^{4}(\hat{\sigma}_{t+1}^2 - \sigma_L^2)$$
+
+\textbf{Approach 2: Path-Based (Monte Carlo)}
+\begin{enumerate}
+    \item Simulate many return paths
+    \item For each path, compute daily GARCH updates
+    \item Average volatility at day $t+5$
+\end{enumerate}
+
+\textbf{Approach 3: Aggregation}
+$$\sigma_{t:t+5}^2 = \sum_{i=1}^{5} \hat{\sigma}_{t+i}^2$$
+
+This gives the 5-day variance (for 5-day VaR)
+\end{frame}
+
+\begin{frame}[nologo]{Direct vs. Iterative Multi-Step Forecasts}
+\textbf{\href{https://www.annualreviews.org/content/journals/10.1146/annurev-financial-110217-022808}{Ghysels, Plazzi, Valkanov, Rubia, \& Dossani (2019)}:} Direct Versus Iterated Multiperiod Volatility Forecasts
+
+\vspace{0.2cm}
+\textbf{Two Approaches for Multi-Step Ahead Forecasts:}
+
+\begin{columns}[T]
+\column{0.48\textwidth}
+\textbf{1. Iterative (Plug-in):}
+\begin{itemize}
+    \item Forecast 1-step: $\hat{\sigma}_{t+1|t}^2$
+    \item Use as input: $\hat{\sigma}_{t+2|t}^2$
+    \item Iterate to horizon $h$
+    \item Standard GARCH approach
+\end{itemize}
+\textcolor{blue}{$\checkmark$ Efficient if model correct}\\
+\textcolor{red}{$\times$ Errors compound over horizons}
+
+\column{0.48\textwidth}
+\textbf{2. Direct Method:}
+\begin{itemize}
+    \item Estimate separate model for $h$
+    \item $\sigma_{t+h}^2 = f(X_t) + \varepsilon_{t+h}$
+    \item No intermediate forecasts
+    \item Tailored to each horizon
+\end{itemize}
+\textcolor{blue}{$\checkmark$ Robust to misspecification}\\
+\textcolor{red}{$\times$ Less efficient; many models}
+\end{columns}
+
+\vspace{0.3cm}
+\textbf{Key Finding:} No universally dominant method---depends on horizon and model
+\end{frame}
+
+
+\begin{frame}[nologo]{Improving Misspecified Models}
+
+\textbf{\href{https://www.sciencedirect.com/science/article/pii/S0304407624001131}{Oh \& Patton (2024)}:} Better the devil you know: Improved forecasts from imperfect models
+
+\textbf{Key Idea:} Even good models are inevitably misspecified
+
+\begin{itemize}
+    \item Improve forecasts from a \textit{known} misspecified model
+    \item Use \textbf{local M estimation} (local OLS, local MLE)
+    \item Weight observations using a state variable correlated with misspecification
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Method:}
+\begin{itemize}
+    \item Upweight past data that looks similar to current environment
+    \item Downweight dissimilar observations
+    \item Examples: use realized volatility, VIX, or time as state variable
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Applications:}
+\begin{itemize}
+    \item GARCH and HAR volatility forecasting
+    \item VaR and ES forecasting
+    \item Yield curve forecasting
+    \item \textit{Significant forecast improvements across all applications}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{Forecast Evaluation: Loss Functions}
+\textbf{How do we know if our forecasts are good?}
+
+\textbf{Challenge:} True volatility $\sigma_t^2$ is unobservable!
+
+\textbf{Proxies:} Squared returns $r_t^2$, realized volatility (from high-frequency data)
+
+\vspace{0.3cm}
+\textbf{Common Loss Functions:}
+\begin{itemize}
+    \item \textbf{MSE}: Mean Squared Error
+    $$\text{MSE} = \frac{1}{T}\sum_{t=1}^{T}(\hat{\sigma}_t^2 - \sigma_t^{2,\text{realized}})^2$$
+
+    \item \textbf{QLIKE}: Quasi-likelihood loss (robust, preferred)
+    $$\text{QLIKE} = \frac{1}{T}\sum_{t=1}^{T}\left(\frac{\sigma_t^{2,\text{realized}}}{\hat{\sigma}_t^2} - \log\frac{\sigma_t^{2,\text{realized}}}{\hat{\sigma}_t^2} - 1\right)$$
+\end{itemize}
+
+\textbf{Why QLIKE?} Less sensitive to outliers than MSE (\href{https://www.sciencedirect.com/science/article/pii/S030440761000076X}{Patton, 2011})
+\end{frame}
+
+\begin{frame}[nologo]{Model Comparison}
+
+\textbf{\href{https://onlinelibrary.wiley.com/doi/full/10.1002/jae.800}{Hansen \& Lunde (2005)}:} A forecast comparison of volatility models: Does anything beat a GARCH(1,1)?
+
+
+\begin{itemize}
+    \item Compared \textbf{330 ARCH-type models} on exchange rate data
+    \item Used realized volatility from high-frequency data as proxy
+    \item Evaluated with multiple loss functions
+    \item Superior Predictive Ability test
+\end{itemize}
+
+\vspace{0.3cm}
+\begin{block}{Key Finding}
+``We find no evidence that any model outperforms GARCH(1,1)''
+\end{block}
+
+\vspace{0.3cm}
+\textbf{Implications:}
+\begin{itemize}
+    \item Parsimony matters---complex models don't always win
+    \item GARCH(1,1) is a robust benchmark
+    \item Results may differ for other asset classes (equities, commodities)
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{Model Confidence Set: \href{https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA5771}{Hansen (2011)}}
+\textbf{Problem:} Comparing many models requires statistical rigor
+
+\textbf{\href{https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA5771}{Hansen (2011)}:} Model Confidence Set (MCS)
+\begin{itemize}
+    \item Statistical framework for comparing multiple forecasts
+    \item Accounts for model uncertainty and multiple testing
+    \item Identifies set of ``superior'' models at given confidence level
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{MCS Procedure:}
+\begin{enumerate}
+    \item Compute pairwise loss differentials: $d_{ij,t} = L_{i,t} - L_{j,t}$
+    \item Test $H_0$: All models have equal expected loss
+    \item If rejected, eliminate worst model; repeat until $H_0$ not rejected
+    \item Result: Set $\widehat{\mathcal{M}}^*_{1-\alpha}$ of statistically indistinguishable models
+\end{enumerate}
+
+\vspace{0.3cm}
+\textbf{Test Statistics:}
+\begin{itemize}
+    \item \textbf{Range statistic} $T_R$: Based on $\max_{i,j} |\bar{d}_{ij}|$
+    \item \textbf{Semi-quadratic} $T_{SQ}$: Based on $\sum_{i<j} \bar{d}_{ij}^2$
+    \item Bootstrap for p-values (block bootstrap for dependence)
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{Arbitrary Modeling Choices}
+\textbf{Problem:} Many implementation choices are not dictated by theory!
+
+\begin{columns}[T]
+\column{0.48\textwidth}
+\begin{itemize}
+    \item \textbf{Training Window}: Rolling (250/500/1000 days) vs.\ expanding?
+    \item \textbf{Forecasting Method}: Iterative vs.\ direct vs.\ scaling?
+    \item \textbf{Model Selection}: GARCH(1,1) vs.\ GJR-GARCH? Normal vs.\ Student-t?
+    \item \textbf{Data Frequency}: Daily vs.\ weekly? High-frequency intervals?
+\end{itemize}
+
+\column{0.48\textwidth}
+\begin{itemize}
+    \item \textbf{Return Calculation}: Log returns required; percentage or decimal?
+    \item \textbf{Rebalancing}: Daily/weekly/monthly? Transaction costs matter
+    \item \textbf{Evaluation Period}: Results vary across subperiods
+    \item \textbf{Evaluation Method}: RMSE, QLIKE, R\textsuperscript{2},...
+\end{itemize}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}[nologo]{Implications of Arbitrary Choices}
+\textbf{Key Insights:}
+
+\begin{itemize}
+    \item \textbf{No ``correct'' answer}: Theory often silent on these choices
+    \item \textbf{Sensitivity analysis crucial}: Test multiple specifications
+    \item \textbf{Robustness matters}: Prefer results that hold across choices
+    \item \textbf{Context-dependent}: Optimal choices vary by application
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Best Practices:}
+
+\begin{enumerate}
+    \item \textbf{Report multiple specifications}: Don't cherry-pick
+    \item \textbf{Use industry standards when available}: e.g., 250-day window
+    \item \textbf{Economic intuition}: Choose based on application needs
+    \item \textbf{Out-of-sample validation}: Test on holdout data
+    \item \textbf{Be transparent}: Document all choices clearly
+\end{enumerate}
+
+\vspace{-0.7cm}
+\begin{center}
+\begin{minipage}{0.60\textwidth}
+\vspace{0.3cm}
+\raggedleft
+\textit{``With great flexibility comes\\great responsibility''}\\[0.1cm]
+{\small\mbox{- Uncle Ben (and researchers choosing model specifications)}}
+\end{minipage}%
+\hspace{0.6cm}%
+\begin{minipage}{0.2\textwidth}
+\vspace{-0.6cm}
+\IfFileExists{assets/other/spiderman.png}{%
+    \includegraphics[width=\textwidth]{assets/other/spiderman.png}
+}{%
+    \IfFileExists{assets/other/spiderman.jpg}{%
+        \includegraphics[width=\textwidth]{assets/other/spiderman.jpg}
+    }{}%
+}
+\end{minipage}
+\end{center}
+\end{frame}
+
+\begin{frame}[nologo]{Real-Time Forecasting: The Rear-View Mirror Problem}
+\textbf{\href{https://doi.org/10.1093/rfs/hhx098}{Ghysels, Horan, \& Moench (2018)}:} Forecasting through the Rearview Mirror: Data Revisions and Bond Return Predictability
+
+\vspace{0.2cm}
+\textbf{Challenge:} Data revisions affect real-time forecasts
+
+\begin{block}{The Problem}
+\begin{itemize}
+    \item Realized volatility estimated from high-frequency data
+    \item Initial estimates revised as more data arrives
+    \item Models estimated on ``final'' data perform poorly in real-time
+\end{itemize}
+\end{block}
+
+\textbf{Real-Time vs.\ Revised Data:}
+\begin{itemize}
+    \item \textbf{Ex-post (revised):} Clean, complete data with revisions
+    \item \textbf{Real-time:} What you actually have when forecasting
+    \item \textbf{Performance gap:} Models look better on revised data
+\end{itemize}
+
+\textbf{Solutions:}
+\begin{itemize}
+    \item Use real-time data vintages for estimation (e.g.\ \href{https://alfred.stlouisfed.org/}{ALFRED})
+    \item Account for data uncertainty in forecasts
+\end{itemize}
+\end{frame}
+
+% =====================================================
+% SECTION 4: TRADING WITH VOLATILITY
+% =====================================================
+\section{Forward-Looking Volatility as a Trading Signal}
+
+\begin{frame}[nologo]{From Risk Management to Trading}
+\textbf{Insight:} Volatility forecasts contain valuable information for trading
+
+\textbf{Trading Approaches:}
+\begin{enumerate}
+    \item \textbf{Volatility Targeting}: Adjust position size based on forecast
+    \item \textbf{Mean Reversion Trading}: Trade volatility itself
+    \item \textbf{Volatility Timing}: Shift between assets based on volatility
+    \item \textbf{Options Trading}: Exploit differences between forecast and implied vol
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[nologo]{Strategy 1: Volatility Targeting}
+\textbf{Concept:} Maintain constant risk exposure
+
+\begin{block}{Position Sizing Formula}
+$$w_t = \frac{\sigma_{\text{target}}}{\hat{\sigma}_{t+1}}$$
+\end{block}
+
+where:
+\begin{itemize}
+    \item $w_t$ = position weight at time $t$
+    \item $\sigma_{\text{target}}$ = target portfolio volatility (e.g., 10\% annual)
+    \item $\hat{\sigma}_{t+1}$ = forecasted volatility
+\end{itemize}
+
+\textbf{Result:}
+\begin{itemize}
+    \item Reduce exposure when volatility is high
+    \item Increase exposure when volatility is low
+    \item Smoother return profile
+    \item Better risk-adjusted returns (higher Sharpe ratio)
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{Strategy 2: Volatility Mean Reversion}
+\textbf{Stylized Fact:} Volatility mean-reverts
+
+\textbf{Trading Logic:}
+\begin{itemize}
+    \item When $\hat{\sigma}_t > \sigma_L + k \cdot \text{std}(\sigma)$: short volatility
+    \item When $\hat{\sigma}_t < \sigma_L - k \cdot \text{std}(\sigma)$: long volatility
+\end{itemize}
+
+\textbf{Implementation:}
+\begin{enumerate}
+    \item Options: Sell options when IV high, buy when IV low
+    \item VIX futures: Short VIX futures in high vol regimes
+    \item ETFs: Trade volatility ETFs (e.g., VXX, SVXY)
+\end{enumerate}
+
+\textbf{Warning:}
+\begin{itemize}
+    \item High volatility can persist longer than expected
+    \item Risk of large losses in crisis periods
+    \item Need careful risk management
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{Strategy 3: Regime Switching}
+\textbf{Idea:} Different assets perform better in different volatility regimes
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Volatility Regime} & \textbf{Overweight} & \textbf{Underweight} \\
+\midrule
+Low ($\hat{\sigma}_t < \sigma_L$) & Equities & Bonds, Cash \\
+Medium ($\hat{\sigma}_t \approx \sigma_L$) & Balanced & - \\
+High ($\hat{\sigma}_t > \sigma_L$) & Bonds, Gold & Equities \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Implementation:}
+\begin{itemize}
+    \item Define volatility thresholds (e.g., percentiles)
+    \item Rebalance when regime changes
+    \item Can combine with momentum/value signals
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{Strategy 4: Forecast vs. Implied Volatility}
+\textbf{Two Volatility Measures:}
+\begin{itemize}
+    \item \textbf{Historical/GARCH}: Based on past returns
+    \item \textbf{Implied Volatility (IV)}: From option prices
+\end{itemize}
+
+\textbf{Trading Signal:}
+$$\text{Signal}_t = \hat{\sigma}_{t+1}^{\text{GARCH}} - \text{IV}_t$$
+
+\textbf{Strategy:}
+\begin{itemize}
+    \item If Signal $> 0$: Buy options (IV underpriced)
+    \item If Signal $< 0$: Sell options (IV overpriced)
+\end{itemize}
+
+\textbf{Refinements:}
+\begin{itemize}
+    \item Use term structure of implied volatility
+    \item Adjust for volatility risk premium
+    \item Consider transaction costs and bid-ask spreads
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{Practical Considerations}
+\textbf{Before Trading on Volatility Forecasts:}
+
+\begin{enumerate}
+    \item \textbf{Backtest thoroughly}: Out-of-sample testing essential
+    \item \textbf{Transaction costs}: Rebalancing costs can erode profits
+    \item \textbf{Model risk}: GARCH may not always be accurate
+    \item \textbf{Regime changes}: Parameters may shift over time
+    \item \textbf{Tail risk}: Volatility strategies can have severe drawdowns
+    \item \textbf{Leverage}: Many vol strategies use leverage (dangerous!)
+\end{enumerate}
+
+\vspace{0.3cm}
+\textbf{Best Practices:}
+\begin{itemize}
+    \item Combine multiple models (ensemble approach)
+    \item Use rolling window estimation
+    \item Implement strict risk limits
+    \item Monitor model performance continuously
+\end{itemize}
+\end{frame}
+
+% =====================================================
+% CONCLUSION
+% =====================================================
+\section{Conclusion}
+
+\begin{frame}[nologo]{Summary}
+\textbf{What We Covered:}
+\begin{itemize}
+    \item \textbf{Foundation}: EWMA, GARCH, MLE, VaR
+    \item \textbf{Stylized Facts}: Clustering, mean reversion, leverage effect
+    \item \textbf{Forecasting}: One-step and multi-step ahead predictions
+    \item \textbf{Trading}: Using volatility forecasts as trading signals
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Key Takeaways:}
+\begin{enumerate}
+    \item Volatility is predictable (unlike returns!)
+    \item GARCH models capture key empirical features
+    \item Forecasts enable better risk management and trading
+    \item Always backtest and validate your models
+\end{enumerate}
+\end{frame}
+
+{
+\setbeamertemplate{footline}{}
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture, overlay]
+    \fill[darkbg] (current page.south west) rectangle (current page.north east);
+    \node[anchor=center, opacity=0.25] at (current page.center) {
+      \includegraphics[width=\paperwidth, height=\paperheight]{\uubg{endpage_light_green.png}}
+    };
+    \node[anchor=center, align=center, text=uuwhite] at (current page.center) {
+      {\Huge Thank You!}\\[0.5cm]
+      {\Large Questions?}\\[0.5cm]
+      {\normalsize }
+    };
+    \node[anchor=south west] at ([xshift=0.8cm, yshift=0.8cm]current page.south west) {
+      \includegraphics[height=2cm]{\uulogo{UU_logo_2021_EN_WHITE.png}}
+    };
+  \end{tikzpicture}
+\end{frame}
+}
+
+
+% =====================================================
+% APPENDIX
+% =====================================================
+\appendix
+
+\section{Appendix}
+
+\begin{frame}[nologo]{Appendix Overview}
+\textbf{Additional topics and resources:}
+
+\vspace{0.2cm}
+\begin{columns}[T]
+\column{0.48\textwidth}
+\begin{itemize}
+    \item \textbf{A:} Long Memory in Volatility
+    \begin{itemize}
+        \item Fractional integration, FIGARCH
+    \end{itemize}
+
+    \vspace{0.15cm}
+    \item \textbf{B:} Structural Breaks \& Regime Switching
+    \begin{itemize}
+        \item Markov-Switching models
+    \end{itemize}
+
+    \vspace{0.15cm}
+    \item \textbf{C:} The GARCH Model Zoo
+    \begin{itemize}
+        \item Overview of model variants
+    \end{itemize}
+\end{itemize}
+
+\column{0.48\textwidth}
+\begin{itemize}
+    \item \textbf{D:} Software Resources
+    \begin{itemize}
+        \item Python packages
+    \end{itemize}
+
+    \vspace{0.15cm}
+    \item \textbf{E:} Workshop Preparation
+    \begin{itemize}
+        \item Data access (WRDS, Yahoo Finance)
+    \end{itemize}
+\end{itemize}
+\end{columns}
+\end{frame}
+
+
+% =====================================================
+% APPENDIX A: LONG MEMORY
+% =====================================================
+\subsection{Appendix A: Long Memory in Volatility}
+
+\begin{frame}[nologo]{Stylized Fact: Long Memory}
+\textbf{Observation:} Autocorrelations of squared returns decay very slowly
+
+\begin{center}
+\includegraphics[width=0.95\textwidth]{assets/other/acf_long_memory.pdf}
+\end{center}
+
+\vspace{-0.1cm}
+\textbf{Implication:} Volatility shocks have long-lasting effects
+
+\textbf{Problem:} Standard GARCH implies exponential decay
+\end{frame}
+
+\begin{frame}[nologo]{Fractional Integration}
+\textbf{Motivation:} Model hyperbolic decay in ACF
+
+\textbf{Fractional Differencing Operator:}
+$$(1-L)^d$$
+
+where $L$ is the lag operator and $0 < d < 1$
+
+\vspace{0.3cm}
+\textbf{Properties:}
+\begin{itemize}
+    \item $d = 0$: No differencing (standard GARCH)
+    \item $0 < d < 1$: Long memory (hyperbolic decay)
+    \item $d = 1$: Integrated (IGARCH, non-stationary)
+\end{itemize}
+
+\textbf{Key Innovation:} One parameter $d$ captures long memory!
+\end{frame}
+
+\begin{frame}[nologo]{FIGARCH Model}
+\begin{block}{FIGARCH --- \href{https://www.sciencedirect.com/science/article/pii/S0304407695017496}{Baillie, Bollerslev, Mikkelsen (1996)}}
+$$\sigma_t^2 = \frac{\omega}{1-\beta_1} + \left[1 - \frac{(1-\phi_1 L)(1-L)^d}{1-\beta_1 L}\right]\varepsilon_t^2$$
+\end{block}
+
+\textbf{Can also be written as:}
+$$\sigma_t^2 = \frac{\omega}{1-\beta_1} + \sum_{i=1}^{\infty}\lambda_i^{FI}\varepsilon_{t-i}^2$$
+
+\textbf{Parameters:}
+\begin{itemize}
+    \item $d$: fractional differencing (long memory parameter)
+    \item $\phi_1$: AR parameter (short-run dynamics)
+    \item $\beta_1$: GARCH persistence
+\end{itemize}
+
+\textbf{Challenge:} Estimation is slow (infinite summation)
+
+\textbf{Solution:} Fast Fourier Transform (Klein \& Walther, 2017)
+\end{frame}
+
+\begin{frame}[nologo]{Other Long Memory Models}
+\textbf{Extensions combining long memory with asymmetry:}
+
+\begin{itemize}
+    \item \textbf{Hyperbolic GARCH (HYGARCH)} --- \href{https://doi.org/10.1198/073500103288619359}{Davidson (2004)}
+    \begin{itemize}
+        \item Partial fractional integration
+        \item Interpolates between GARCH and FIGARCH
+    \end{itemize}
+
+    \item \textbf{FIEGARCH} --- \href{https://www.sciencedirect.com/science/article/pii/0304407695017364}{Bollerslev \& Mikkelsen (1996)}
+    \begin{itemize}
+        \item Long memory + asymmetry (EGARCH structure)
+        \item Models $\log(\sigma_t^2)$ with fractional differencing
+    \end{itemize}
+
+    \item \textbf{FIAPARCH} --- \href{https://doi.org/10.1002/(SICI)1099-1255(199801/02)13:1<49::AID-JAE459>3.0.CO;2-O}{Tse (1998)}
+    \begin{itemize}
+        \item Long memory + asymmetry + power transformation
+        \item Most flexible, but many parameters
+    \end{itemize}
+\end{itemize}
+
+\textbf{Trade-off:} Flexibility vs. computational cost vs. overfitting risk
+\end{frame}
+
+% =====================================================
+% APPENDIX B: STRUCTURAL BREAKS
+% =====================================================
+\subsection{Appendix B: Structural Breaks and Regime Switching}
+
+\begin{frame}[nologo]{Stylized Fact: Structural Breaks}
+\textbf{Problem:} Standard GARCH assumes fixed parameters over time
+
+\textbf{Reality:} Volatility dynamics shift due to:
+\begin{itemize}
+    \item Economic cycles (recession vs. expansion)
+    \item Policy changes (e.g., central bank interventions)
+    \item Market crises or extreme events
+    \item Regulatory or technological shifts
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Consequence:} Parameter bias and spurious persistence
+
+\vspace{0.3cm}
+\begin{center}
+\textit{``The strong persistence in variance is due to structural changes''}\\
+--- \href{https://www.tandfonline.com/doi/abs/10.1080/07350015.1994.10524546}{Cai (1994)}
+\end{center}
+
+\textbf{Solution:} Markov-Regime-Switching (MRS) models
+\end{frame}
+
+\begin{frame}[nologo]{Markov-Regime-Switching Framework}
+\textbf{Idea:} At each time $t$, the process is in one of $R$ unobserved states
+
+\textbf{State Variable:} $S_t \in \{1, 2, \ldots, R\}$
+
+\textbf{Transition Probabilities:}
+$$P_{i,j} = P[S_t = j | S_{t-1} = i]$$
+
+\begin{block}{Transition Matrix (for 2 regimes)}
+$$\mathbf{P} = \begin{bmatrix}
+P_{1,1} & P_{1,2}\\
+P_{2,1} & P_{2,2}
+\end{bmatrix}$$
+\end{block}
+
+\textbf{Properties:}
+\begin{itemize}
+    \item Rows sum to 1: $\sum_j P_{i,j} = 1$
+    \item Diagonal elements measure regime persistence
+    \item Framework by \href{https://doi.org/10.2307/1912559}{Hamilton (1989)}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{MRS-ARCH Model}
+\begin{block}{MRS-ARCH --- \href{https://www.sciencedirect.com/science/article/pii/0304407694900671}{Hamilton \& Susmel (1994)}, \href{https://www.tandfonline.com/doi/abs/10.1080/07350015.1994.10524546}{Cai (1994)}}
+\begin{align*}
+r_t &= \mu_{t,S_t} + \sigma_{t,S_t}\cdot z_t\\
+\sigma_{t,S_t}^2 &= \omega_{S_t} + \sum_{i=1}^{q}\alpha_{i,S_t}\varepsilon_{t-i}^2
+\end{align*}
+\end{block}
+
+\textbf{Key Feature:} All parameters depend on current regime $S_t$
+
+\textbf{Example (2 regimes):}
+\begin{itemize}
+    \item Regime 1: ``Low volatility'' (normal times)
+    \item Regime 2: ``High volatility'' (crisis periods)
+\end{itemize}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Captures time-varying volatility dynamics
+    \item Identifies distinct market conditions
+    \item Reduces spurious persistence
+\end{itemize}
+\end{frame}
+
+\begin{frame}[nologo]{MRS-GARCH: Path-Dependency Problem}
+\textbf{Na\"ive MRS-GARCH:}
+$$\sigma_{t,S_t}^2 = \omega_{S_t} + \alpha_{S_t}\varepsilon_{t-1}^2 + \beta_{S_t}\sigma_{t-1}^2$$
+
+\textbf{Problem:} What is $\sigma_{t-1}^2$?
+\begin{itemize}
+    \item Depends on $S_{t-1}$, which could be any of $R$ states
+    \item To compute $\sigma_{t,S_t}^2$, need $\sigma_{t-1,S_{t-1}}^2$ for all possible $S_{t-1}$
+    \item This creates $R^t$ paths (exponentially growing!)
+\end{itemize}
+
+\textbf{Solutions:}
+\begin{enumerate}
+    \item \textbf{\href{https://doi.org/10.1016/0304-405X(96)00875-6}{Gray (1996)}:} Use $E[\sigma_{t-1}^2|\mathcal{F}_{t-2}]$
+    \item \textbf{\href{https://link.springer.com/article/10.1007/s001810100100}{Klaassen (2002)}:} Use $E[\sigma_{t-1}^2|\mathcal{F}_{t-1}]$ (more accurate)
+    \item \textbf{\href{https://academic.oup.com/jfec/article-abstract/2/4/493/900480}{Haas et al. (2004)}:} Separate variance paths per regime
+\end{enumerate}
+\end{frame}
+
+
+% =====================================================
+% APPENDIX C: GARCH ZOO
+% =====================================================
+\subsection{Appendix C: The GARCH Model Zoo}
+
+\begin{frame}[nologo]{The GARCH Zoo/Soup/Alphabet}
+\begin{table}
+\centering
+\begin{tabular}{ll|ll}
+\toprule
+A & APARCH & N & NGARCH\\
+B & Beta-GARCH & O & OGARCH \\
+C & CGARCH & P & PGARCH\\
+D & DCC & Q & QGARCH\\
+E & EGARCH & R & RGARCH\\
+F & FIGARCH & S & SGARCH\\
+G & GJR-GARCH & T & TGARCH\\
+H & HYGARCH & U & UGARCH\\
+I & IGARCH & V & VGARCH\\
+J & Jump-GARCH & W & Weak GARCH\\
+K & KGARCH & X & \\
+L & LMGARCH & Y & \\
+M & MGARCH & Z & ZARCH\\
+\bottomrule
+\end{tabular}
+\caption{The GARCH zoo/soup/alphabet. The list is not exhaustive. See \href{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1263250}{ Bollerslev (2008)} for a wider overview.}
+\end{table}
+
+\vspace{0.3cm}
+\textbf{Key Insight:} Despite the variety, GARCH(1,1) often performs remarkably well!\\
+\textit{(Hansen \& Lunde, 2005: ``Hard to beat GARCH(1,1) for exchange rates'')}
+\end{frame}
+
+% =====================================================
+% APPENDIX D: SOFTWARE RESOURCES
+% =====================================================
+\subsection{Appendix D: Software Resources}
+
+\begin{frame}[nologo]{Software Resources: Python Implementation}
+\textbf{Core Volatility Modeling:}
+\begin{itemize}
+    \item \texttt{arch}: Kevin Sheppard's ARCH/GARCH library
+    \begin{itemize}
+        \item GARCH, EGARCH, GJR-GARCH, FIGARCH
+        \item Multiple distributions (Normal, Student-t, skewed-t, GED)
+        \item Comprehensive diagnostic tools
+    \end{itemize}
+    \item \texttt{statsmodels}: Additional time series models and tests
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Data Acquisition:}
+\begin{itemize}
+    \item \texttt{wrds}: WRDS database access (Compustat)
+    \item \texttt{yfinance}: Yahoo Finance data (free alternative)
+    \item \texttt{pandas\_datareader}: Multiple data sources
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Supporting Tools:}
+\begin{itemize}
+    \item \texttt{pandas}: Data manipulation and time series
+    \item \texttt{numpy}: Numerical computing
+    \item \texttt{matplotlib/seaborn}: Visualization
+    \item \texttt{scipy}: Optimization and statistical functions
+\end{itemize}
+\end{frame}
+
+% =====================================================
+% APPENDIX E: WORKSHOP PREPARATION
+% =====================================================
+\subsection{Appendix E: Workshop Preparation}
+
+\begin{frame}[nologo]{Getting Started with Wharton Research Data Services (WRDS)}
+
+\textbf{What is WRDS?}
+\begin{itemize}
+    \item Academic financial database (e.g., Compustat)
+    \item Free access for university students/faculty
+    \item Industry-standard data used in research
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Registration Steps:}
+\begin{enumerate}
+    \item Go to \texttt{\href{https://wrds-www.wharton.upenn.edu/}{wrds-www.wharton.upenn.edu}}
+    \item Click ``Register for WRDS Account''
+    \item Use your \textbf{university email address}
+    \item Wait for approval (usually 1-2 business days)
+    \item Check email for username confirmation
+\end{enumerate}
+
+\vspace{0.3cm}
+\textbf{Important:} Register \textit{before} the workshop if you haven't already!
+\end{frame}
+
+\begin{frame}[nologo,fragile]{First-Time Setup in Jupyter Notebook}
+\textbf{Step-by-step connection process:}
+
+\begin{enumerate}
+    \item \textbf{Import and connect:}
+\begin{codebox}
+  \color{uuwhite}
+  \small
+  \texttt{%
+  \textcolor{uuyellow}{import} wrds\\
+  db = wrds.Connection()
+  }
+\end{codebox}
+    \item \textbf{Enter your WRDS username when prompted}
+    \item \textbf{Enter your password} (password is hidden and won't show)
+    \item \textbf{Save credentials?} (say yes)
+\begin{verbatim}
+Create a .pgpass file to store your password (y/n): y
+\end{verbatim}
+\item \textbf{After first setup:} (automatic login)
+\begin{codebox}
+  \color{uuwhite}
+  \small
+  \texttt{%
+  db = wrds.Connection(wrds\_username='your\_username')
+  }
+\end{codebox}
+\end{enumerate}
+
+
+
+\end{frame}
+
+\begin{frame}[nologo,fragile]{Alternative: Yahoo Finance (No Registration)}
+\textbf{If WRDS doesn't work:} Use \texttt{yfinance} package
+
+\begin{codebox}
+  \color{uuwhite}
+  \small
+  \texttt{%
+  \textcolor{uuyellow}{import} yfinance \textcolor{uuyellow}{as} yf\\
+  \\
+  \textcolor{uugreen}{\# Download S\&P 500 data}\\
+  sp500 = yf.download('{\^{}}GSPC', start='2019-01-01',\\
+  \hspace{2.2cm}end='2024-01-01')\\
+  returns = sp500['Adj Close'].pct\_change()
+  }
+\end{codebox}
+
+
+\textbf{Trade-offs:}\\
+    \textcolor{green}{\checkmark} No registration needed, works immediately\\
+    \textcolor{red}{$\times$} Less comprehensive than WRDS\\
+    \textcolor{red}{$\times$} Sometimes rate-limited\\
+
+\end{frame}
+
+
+
+\end{document}
