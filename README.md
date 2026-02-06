@@ -32,8 +32,7 @@ sudo tlmgr install moloch tcolorbox fontawesome5 fira pgfopts
 > **Note:** The custom Beamer style (`uu-aif-beamer.sty`) uses recent LaTeX packages that may not be available in older or minimal local installations. If you encounter compilation errors, consider using a hosted service with an up-to-date LaTeX distribution:
 >
 > - [Overleaf](https://www.overleaf.com/)
-> - [Prism](https://prism.run/) (Utrecht University)
->
+> - [Prism](https://prism.openai.com/) 
 > These services maintain current TeX Live installations and handle package dependencies automatically.
 
 ## Output Folder
@@ -86,3 +85,59 @@ Output is saved to `assets/figures/`.
 
 - `assets/figures/` — Generated figures (from Python scripts)
 - `assets/graphs/` — Graphics collected from external sources
+
+## Python Style Package
+
+The `py/uuaif_style/` package provides matplotlib styling that matches the LaTeX Beamer template.
+
+### Quick start
+
+```python
+from uuaif_style import slide_mode, colors
+
+slide_mode()  # Dark background matching slide aesthetic
+plt.plot(x, y)  # Yellow line (first in color cycle)
+plt.title('Title', color=colors.UUYELLOW)
+plt.savefig('assets/figures/my_figure.pdf')
+```
+
+### Available styles
+
+| Function | Description |
+|----------|-------------|
+| `slide_mode()` | Dark background (#1A1A2E), yellow accents — matches section dividers |
+| `apply_style()` | Cream background (#FAF9F6) — matches content slides |
+| `apply_style(dark_mode=True)` | Dark background with standard color cycle |
+
+### Slide mode color cycle
+
+1. Yellow (`#FFCD00`) — primary accent
+2. Light teal (`#7EEAE5`) — circuit board aesthetic
+3. Light coral (`#F5A6A0`)
+4. Light green (`#8FE8B0`)
+5. Light blue (`#9ECFFF`)
+6. Light purple (`#CBA6F7`)
+
+### Colors
+
+```python
+from uuaif_style import colors
+
+# Primary
+colors.UUYELLOW    # #FFCD00
+colors.UURED       # #C00A35
+
+# Secondary
+colors.UUBLUE      # #5287C6
+colors.UUGREEN     # #24A793
+colors.UUPURPLE    # #5B2182
+
+# Backgrounds
+colors.DARKBG      # #1A1A2E
+colors.CREAM       # #FAF9F6
+
+# Light colors (for dark backgrounds)
+colors.LIGHT_CORAL
+colors.LIGHT_TEAL
+colors.LIGHT_GREEN
+```
