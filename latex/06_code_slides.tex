@@ -1,0 +1,176 @@
+% 06_code_slides.tex - Code slides with verbatim/listings
+% Compile from the uu-aif directory
+\documentclass[aspectratio=169]{beamer}
+\usepackage{uu-aif-beamer}
+
+% Listings package for code
+\usepackage{listings}
+
+% Define Python style matching UU theme
+\lstdefinestyle{uupython}{
+  language=Python,
+  basicstyle=\ttfamily\small\color{uuwhite},
+  keywordstyle=\color{uuyellow},
+  commentstyle=\color{uugreen},
+  stringstyle=\color{softcoral},
+  numberstyle=\tiny\color{gray},
+  backgroundcolor=\color{darkbg},
+  frame=none,
+  showstringspaces=false,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=4,
+  xleftmargin=0pt,
+  xrightmargin=0pt,
+  aboveskip=0pt,
+  belowskip=0pt,
+  morekeywords={def, return, import, from, as, if, else, elif, for, while, True, False, None, print, self},
+  literate={*}{{\textcolor{uuwhite}{*}}}1
+           {=}{{\textcolor{uuwhite}{=}}}1
+           {-}{{\textcolor{uuwhite}{-}}}1
+           {+}{{\textcolor{uuwhite}{+}}}1
+           {/}{{\textcolor{uuwhite}{/}}}1
+           {(}{{\textcolor{uuwhite}{(}}}1
+           {)}{{\textcolor{uuwhite}{)}}}1
+           {[}{{\textcolor{uuwhite}{[}}}1
+           {]}{{\textcolor{uuwhite}{]}}}1
+           {:}{{\textcolor{uuwhite}{:}}}1
+           {,}{{\textcolor{uuwhite}{,}}}1
+           {.}{{\textcolor{uuwhite}{.}}}1
+}
+
+% Set default style
+\lstset{style=uupython}
+
+% Style for inline code (on cream background)
+\lstdefinestyle{uupython-inline}{
+  language=Python,
+  basicstyle=\ttfamily\color{darkbg},
+  keywordstyle=\color{uupurple},
+  commentstyle=\color{uugreen},
+  stringstyle=\color{uured},
+  showstringspaces=false,
+  morekeywords={def, return, import, from, as, if, else, elif, for, while, True, False, None, print, self},
+}
+
+% Convenience command for inline code
+\newcommand{\pycode}[1]{\lstinline[style=uupython-inline]{#1}}
+
+\begin{document}
+
+\titleslide{Code Slides}{Python Implementation}{January 2026}
+
+% Simple code block
+\begin{frame}[fragile]{Python Implementation}
+
+  \begin{codebox}
+  \begin{lstlisting}
+def black_scholes_call(S, K, T, r, sigma):
+    # Calculate European call option price
+    d1 = (np.log(S/K) + (r + 0.5*sigma**2)*T) \
+         / (sigma * np.sqrt(T))
+    d2 = d1 - sigma * np.sqrt(T)
+    return S*norm.cdf(d1) - K*np.exp(-r*T)*norm.cdf(d2)
+  \end{lstlisting}
+  \end{codebox}
+
+\end{frame}
+
+% Code with explanation
+\begin{frame}[fragile]{Delta Calculation}
+
+  \begin{columns}
+    \column{0.55\textwidth}
+    \begin{codebox}
+    \begin{lstlisting}
+def delta(S, K, T, r, sigma):
+    d1 = calculate_d1(...)
+    return norm.cdf(d1)
+    \end{lstlisting}
+    \end{codebox}
+
+    \column{0.42\textwidth}
+    \begin{itemize}
+      \item Delta = $N(d_1)$
+      \item Range: $[0, 1]$ for calls
+      \item Measures price sensitivity
+    \end{itemize}
+  \end{columns}
+
+\end{frame}
+
+% Multiple code snippets
+\begin{frame}[fragile]{All Greeks}
+
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+    \begin{codebox}
+    \begin{lstlisting}
+# Delta
+delta = norm.cdf(d1)
+
+# Gamma
+gamma = norm.pdf(d1) / \
+    (S * sigma * sqrt(T))
+    \end{lstlisting}
+    \end{codebox}
+
+    \column{0.48\textwidth}
+    \begin{codebox}
+    \begin{lstlisting}
+# Vega
+vega = S * sqrt(T) * norm.pdf(d1)
+
+# Theta
+theta = -S * norm.pdf(d1) * \
+    sigma / (2 * sqrt(T))
+    \end{lstlisting}
+    \end{codebox}
+  \end{columns}
+
+\end{frame}
+
+% Usage example
+\begin{frame}[fragile]{Example Usage}
+
+  \begin{codebox}
+  \begin{lstlisting}
+# Example: Price a call option
+S = 100      # Stock price
+K = 105      # Strike
+T = 0.5      # Time (years)
+r = 0.05     # Risk-free rate
+sigma = 0.2  # Volatility
+
+price = black_scholes_call(S, K, T, r, sigma)
+print(f"Call price: ${price:.2f}")
+# Output: Call price: $5.57
+  \end{lstlisting}
+  \end{codebox}
+
+\end{frame}
+
+% Inline code example
+\begin{frame}[fragile]{Inline Code}
+
+  You can also use inline code like \pycode{import numpy as np} within text.
+
+  \vspace{1em}
+
+  The function \pycode{black_scholes_call(S, K, T, r, sigma)} takes five parameters:
+
+  \begin{itemize}
+    \item \pycode{S} -- Current stock price
+    \item \pycode{K} -- Strike price
+    \item \pycode{T} -- Time to expiration (in years)
+    \item \pycode{r} -- Risk-free interest rate
+    \item \pycode{sigma} -- Volatility
+  \end{itemize}
+
+\end{frame}
+
+\closingslide{Questions?}{endpage_light_green.png}
+
+\end{document}
